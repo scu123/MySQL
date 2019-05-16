@@ -1,0 +1,67 @@
+项目三：超过5名学生的课（难度：简单）
+
+创建如下所示的courses 表 ，有: student (学生) 和 class (课程)。
+create table course(student varchar(255),class varchar(255));
+插入3行数据
+insert into course(student, class)
+values
+('A','Charecter'),
+('B','English'),
+('C','Math'),
+('D','Math'),
+('E','Math'),
+('F','Math'),
+('G','Science'),
+('H','Math'),
+('I','English'),
+('A','Math');
+查询重复数据（class>5）
+select class from course group by class having count(*)>5;
+
+项目四：交换工资（难度：简单）
+
+创建一个 salary表，如下所示，有m=男性 和 f=女性的值 。
+create table salary(Id int not null,Name varchar(255),Sex varchar(255),Salary int not null);
+插入数据
+insert into salary(Id,Name,Sex,Salary)
+values
+(1,'A','m',2500),
+(2,'B','f',1500),
+(3,'C','m',5500),
+(4,'D','f',500);
+交换工资
+update salary set Sex = case Sex
+when 'f' then 'm'
+when 'm' then 'f'
+end;
+
+
+项目五：组合两张表 （难度：简单）
+
+在数据库中创建表1和表2，并各插入三行数据（自己造）
+表1:
+create table Person(PersonId int not null primary key,FirstName varchar(255),LastName varchar(255));
+插入数据
+insert into Person(PersonId,FirstName,LastName)
+values
+(1,'A','a'),
+(2,'B','b'),
+(3,'C','c');
+表2:
+create table Address(AddressId int not null,PersonId int not null,City varchar(255),State varchar(255));
+插入数据
+insert into Address(AddressId,PersonId,City,State)
+values
+(1,2,'Chengdu','Sichuan'),
+(3,4,'Beijing','Beijing'),
+(5,6,'Taibei','Taiwan');
+查询语句
+select FirstName, LastName, City, State from Address left join Person on Person.PersonId = Address.PersonId order by Person.PersonId;
+
+项目六：删除重复的邮箱（难度：简单）
+
+编写一个 SQL 查询，来删除 email 表中所有重复的电子邮箱，重复的邮箱里只保留 **Id ***最小 *的那个。
+create table emailtmp as select * from email;
+删除两表之中email重复而且id更大的那个
+delete emailtmp from emailtmp,email where emailtmp.email = email.email an
+d emailtmp.id>email.id;
