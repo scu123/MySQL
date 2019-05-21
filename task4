@@ -1,0 +1,188 @@
+#   项目十
+mysql> create DATABASE TRIPS;
+Query OK, 1 row affected
+
+mysql> use TRIPS;
+Database changed
+mysql> CREATE TABLE Trips (
+	Id INT NOT NULL PRIMARY KEY,
+	Client_Id INT NOT NULL,
+	Driver_Id INT NOT NULL,
+	City_Id INT NOT NULL,
+	Status enum('completed','cancelled_by_driver','cancelled_by_client'),
+	Request_at DATE NOT NULL);
+Query OK, 0 rows affected
+
+mysql> INSERT INTO Trips VALUES
+	(1,1,10,1,'completed',20131001),
+	(2,2,11,1,'cancelled_by_driver',20131001),
+	(3,3,12,6,'completed',20131001),
+	(4,4,13,6,'cancelled_by_client',20131001),
+	(5,1,10,1,'completed',20131002),
+	(6,2,11,6,'completed',20131002),
+	(7,3,12,6,'completed',20131002),
+	(8,2,12,12,'completed',20131003),
+	(9,3,10,12,'completed',20131003),
+	(10,4,13,12,'cancelled_by_driver',20131003);
+Query OK, 10 rows affected
+Records: 10  Duplicates: 0  Warnings: 0
+
+mysql> select * from Trips;
++----+-----------+-----------+---------+---------------------+------------+
+| Id | Client_Id | Driver_Id | City_Id | Status              | Request_at |
++----+-----------+-----------+---------+---------------------+------------+
+|  1 |         1 |        10 |       1 | completed           | 2013-10-01 |
+|  2 |         2 |        11 |       1 | cancelled_by_driver | 2013-10-01 |
+|  3 |         3 |        12 |       6 | completed           | 2013-10-01 |
+|  4 |         4 |        13 |       6 | cancelled_by_client | 2013-10-01 |
+|  5 |         1 |        10 |       1 | completed           | 2013-10-02 |
+|  6 |         2 |        11 |       6 | completed           | 2013-10-02 |
+|  7 |         3 |        12 |       6 | completed           | 2013-10-02 |
+|  8 |         2 |        12 |      12 | completed           | 2013-10-03 |
+|  9 |         3 |        10 |      12 | completed           | 2013-10-03 |
+| 10 |         4 |        13 |      12 | cancelled_by_driver | 2013-10-03 |
++----+-----------+-----------+---------+---------------------+------------+
+10 rows in set
+
+mysql> CREATE TABLE Users (
+	Users_Id INT NOT NULL PRIMARY KEY,
+	Banned VARCHAR(20) NOT NULL,
+	Role enum('client','driver','partner')
+	);
+Query OK, 0 rows affected
+
+mysql> INSERT INTO Users VALUES
+	(1,'No','client'),
+	(2,'Yes','client'),
+	(3,'No','client'),
+	(4,'No','client'),
+	(10,'No','driver'),
+	(11,'No','driver'),
+	(12,'No','driver'),
+	(13,'No','driver');
+Query OK, 8 rows affected
+Records: 8  Duplicates: 0  Warnings: 0
+
+mysql> select * from Users;
++----------+--------+--------+
+| Users_Id | Banned | Role   |
++----------+--------+--------+
+|        1 | No     | client |
+|        2 | Yes    | client |
+|        3 | No     | client |
+|        4 | No     | client |
+|       10 | No     | driver |
+|       11 | No     | driver |
+|       12 | No     | driver |
+|       13 | No     | driver |
++----------+--------+--------+
+8 rows in set
+
+mysql> SELECT 
+    Day, CAST(Rate AS DECIMAL (10 , 2 )) AS 'Cancellation Rate'
+FROM
+    (SELECT 
+        Request_at AS Day,
+            (SELECT 
+                    COUNT(Status)
+                FROM
+                    Trips b1
+                JOIN Users b2 ON b2.Users_Id = b1.Client_Id
+                    AND b2.Banned = 'No'
+                WHERE
+                    Request_at = t1.Request_at
+                        AND Status IN ('cancelled_by_client' , 'cancelled_by_driver')) / COUNT(t1.Status) AS Rate
+    FROM
+        Trips t1, Users t2
+    WHERE
+        t2.Users_Id = t1.Client_Id
+            AND t2.Banned = 'No'
+            AND t1.Request_at BETWEEN '2013-10-01' AND '2013-10-03'
+    GROUP BY t1.Request_at
+    ORDER BY t1.Request_at) tt;
++------------+-------------------+
+| Day        | Cancellation Rate |
++------------+-------------------+
+| 2013-10-01 | 0.33              |
+| 2013-10-02 | 0                 |
+| 2013-10-03 | 0.5               |
++------------+-------------------+
+3 rows in set
+
+#  项目十一
+mysql> INSERT INTO Employee VALUES (5, 'Janet', 69000, 1);
+INSERT INTO Employee VALUES (6, 'Randy', 85000, 1);
+
+SELECT 
+    t2.Name as Department, t1.Name as Employee, t1.Salary 
+FROM
+    Employee t1 join Department t2 on t1.DepartmentId = t2.Id
+WHERE
+    t1.Id IN (SELECT 
+            Id
+        FROM
+            (SELECT 
+                Id
+            FROM
+                Employee
+            WHERE
+                DepartmentId = t1.DepartmentId 
+                ORDER BY Salary DESC
+            LIMIT 3) tt)
+ORDER BY DepartmentId , Salary DESC
+
++------------+----------+--------+
+	| Department | employee | Salary |
+	+------------+----------+--------+
+	| IT         | joe      |  70000 |
+	| Sales      | henry    |  80000 |
+	| Sales      | sam      |  60000 |
+	| IT         | max      |  90000 |
+	| IT         | janet    |  69000 |
+	| IT         | randy    |  85000 |
+	+------------+----------+--------+
+  6 rows in set
+  
+  +------------+----------+--------+
+	| Department | employee | Salary |
+	+------------+----------+--------+
+	| IT         | max      |  90000 |
+	| IT         | randy    |  85000 |
+	| Sales      | henry    |  80000 |
+	| IT         | joe      |  70000 |
+	| IT         | janet    |  69000 |
+	| Sales      | sam      |  60000 |
+	+------------+----------+--------+
+  6 rows in set
+  
+  #  项目十二
+  +----+-------+
+	| id | score |
+	+----+-------+
+	|  1 |  3.50 |
+	|  2 |  3.65 |
+	|  3 |  4.00 |
+	|  4 |  3.85 |
+	|  5 |  4.00 |
+	|  6 |  3.65 |
+	+----+-------+
+	6 rows in set 
+
+ mysql>  select * from (
+	select 
+	    score,
+	    (select count(score) from score as s2 where s2.score > s1.score)+1 AS 'Rank' 
+	from score as s1) S
+	order by score DESC;
+  
+  +-------+------+
+	| score | Rank |
+	+-------+------+
+	|  4.00 |    1 |
+	|  4.00 |    1 |
+	|  3.85 |    3 |
+	|  3.65 |    4 |
+	|  3.65 |    4 |
+	|  3.50 |    6 |
+	+-------+------+
+	6 rows in set 
